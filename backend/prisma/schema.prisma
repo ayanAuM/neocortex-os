@@ -1,0 +1,112 @@
+// This is your Prisma schema file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  prayerLogs   PrayerLog[]
+  quranLogs    QuranLog[]
+  workoutLogs  WorkoutLog[]
+  studyLogs    StudyLog[]
+  habits       HabitTracker[]
+  diets        DietPlanner[]
+  journals     DailyJournal[]
+  challenges   Challenge[]
+  goals        Goal[]
+}
+
+model PrayerLog {
+  id      String   @id @default(uuid())
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String
+  date    DateTime @default(now())
+  fajr    Boolean  @default(false)
+  zuhr    Boolean  @default(false)
+  asr     Boolean  @default(false)
+  maghrib Boolean  @default(false)
+  isha    Boolean  @default(false)
+
+  @@unique([userId, date])
+}
+
+model QuranLog {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  date       DateTime @default(now())
+  versesRead Int      @default(0)
+  pagesRead  Int      @default(0)
+}
+
+model WorkoutLog {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  date      DateTime @default(now())
+  exercises Json     // Array of { name, sets, reps, weight }
+}
+
+model StudyLog {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  date     DateTime @default(now())
+  duration Int      // Duration in minutes
+  topic    String
+}
+
+model HabitTracker {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  habitName String
+  schedule  String   // e.g., 'daily', 'weekly'
+  createdAt DateTime @default(now())
+}
+
+model DietPlanner {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  date   DateTime @default(now())
+  meals  Json     // Array of { type: 'breakfast', food: 'apple', calories: 95 }
+}
+
+model DailyJournal {
+  id      String   @id @default(uuid())
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String
+  date    DateTime @default(now())
+  content String
+  mood    Int      // 1 to 5
+}
+
+model Challenge {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  title  String
+  status String   @default("active") // "active", "completed", "failed"
+}
+
+model Goal {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  title    String
+  deadline DateTime?
+  status   String   @default("in_progress") // "in_progress", "achieved"
+}
